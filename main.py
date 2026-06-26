@@ -144,4 +144,3 @@ while running:
     pygame.time.wait(16)
 
 pygame.quit()
-
