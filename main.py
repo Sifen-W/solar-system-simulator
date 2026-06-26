@@ -18,6 +18,34 @@ glClearColor(0.0, 0.0, 0.0, 1.0)
 
 stars = [(random.uniform(-500, 500), random.uniform(-375, 375)) for _ in range(250)]
 
+
+angles = {
+    "mercury": 0.0,
+    "venus":   0.0,
+    "earth":   0.0,
+    "mars":    0.0,
+    "jupiter": 0.0,
+    "saturn":  0.0,
+    "uranus":  0.0,
+    "neptune": 0.0,
+}
+
+planets = {
+    "mercury": ((0.7, 0.7, 0.7),  80,  8,  2.0),
+    "venus":   ((0.9, 0.7, 0.3), 120, 12,  1.4),
+    "earth":   ((0.2, 0.5, 1.0), 170, 13,  1.0),
+    "mars":    ((0.9, 0.3, 0.1), 220, 10,  0.7),
+    "jupiter": ((0.8, 0.6, 0.4), 280, 25,  0.4),
+    "saturn":  ((0.9, 0.8, 0.5), 330, 20,  0.3),
+    "uranus":  ((0.4, 0.8, 0.9), 380, 16,  0.2),
+    "neptune": ((0.2, 0.3, 0.9), 430, 15,  0.1),
+}
+
+planet_scales = {name: 1.0 for name in planets}
+planet_names = list(planets.keys())
+selected_index = 0
+speed = 1.0
+
 FONT = {
     'A': [0x0E,0x11,0x11,0x1F,0x11,0x11,0x11],
     'B': [0x1E,0x11,0x11,0x1E,0x11,0x11,0x1E],
@@ -126,6 +154,33 @@ def draw_orbit(radius):
     glColor3f(0.25, 0.25, 0.25)
     draw_circle(radius, filled=False)
 
+def draw_planets():
+    selected_name = planet_names[selected_index]
+    for name, (color, orbit_r, size, orbit_speed) in planets.items():
+        draw_orbit(orbit_r)
+
+        rad = math.radians(angles[name])
+        px = orbit_r * math.cos(rad)
+        py = orbit_r * math.sin(rad)
+
+        glPushMatrix()
+        glRotatef(angles[name], 0, 0, 1)
+        glTranslatef(orbit_r, 0, 0)
+        scale = planet_scales[name]
+        glScalef(scale, scale, 1.0)
+        glColor3f(*color)
+        draw_circle(size)
+        glPopMatrix()
+
+        if name == selected_name:
+            draw_text_colored(name.upper(), px + size + 3, py + size + 8, (1.0, 1.0, 0.0))
+        else:
+            draw_text(name.upper(), px + size + 3, py + size + 8)
+
+def update():
+    for name, (color, orbit_r, size, orbit_speed) in planets.items():
+        angles[name] += orbit_speed * speed
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -137,8 +192,10 @@ while running:
     glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
 
+    update()
     draw_stars()
     draw_sun()
+    draw_planets()
 
     pygame.display.flip()
     pygame.time.wait(16)
